@@ -14,8 +14,10 @@ export async function GET() {
     const user = db.getUserById(session.userId);
 
     if (!user) {
-      session.destroy();
-      return NextResponse.json({ authenticated: false });
+      // Clear invalid session by deleting the cookie
+      const response = NextResponse.json({ authenticated: false });
+      response.cookies.delete("marvin_session");
+      return response;
     }
 
     return NextResponse.json({

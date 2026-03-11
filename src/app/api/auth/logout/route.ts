@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/session";
 
 export async function POST() {
-  const session = await getSession();
-  session.destroy();
-  return NextResponse.json({ success: true });
+  const response = NextResponse.json({ success: true });
+  response.cookies.set("marvin_session", "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+  return response;
 }

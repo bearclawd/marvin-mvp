@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import getDb from "@/lib/db";
-import { getSession } from "@/lib/session";
 
 export async function POST(req: Request) {
   try {
@@ -24,14 +23,21 @@ export async function POST(req: Request) {
     const shop = db.createShop({ name: shopName });
     const user = db.createUser(shop.id, email, password, name);
 
-    const session = await getSession();
-    session.userId = user.id;
-    session.shopId = shop.id;
-    session.email = email;
-    session.name = name;
-    await session.save();
+    // Create session token via cookie (same as login)
+    const sessionData = { userId: user.id, shopId: shop.id, email, name };
+    const token = Buffer.from(JSON.stringify(sessionData)).toString("base64url");
 
-    return NextResponse.json({ success: true, user: { id: user.id, name, email, shopName } });
+    const response = NextResponse.json({ success: true, user: { id: user.id, name, email, shopName } });
+
+    response.cookies.set("marvin_session", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return response;
   } catch (error) {
     console.error("Register error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
