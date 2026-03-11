@@ -1,4 +1,4 @@
-import { hashSync, compareSync } from "bcryptjs";
+import { hashPassword, verifyPassword } from "./hash";
 
 // ---- In-memory store for prototype ----
 // All demo data lives here. No external DB needed.
@@ -82,7 +82,7 @@ class InMemoryDB {
     // User
     this.users.push({
       id: 1, shop_id: 1, email: "pascal@precision-cnc.ch",
-      password_hash: hashSync("demo1234", 10),
+      password_hash: hashPassword("demo1234"),
       name: "Pascal Behr", role: "admin",
     });
 
@@ -226,7 +226,7 @@ class InMemoryDB {
   createUser(shopId: number, email: string, password: string, name: string): User {
     this.seed();
     const id = this.users.length + 1;
-    const user: User = { id, shop_id: shopId, email, password_hash: hashSync(password, 10), name, role: "admin" };
+    const user: User = { id, shop_id: shopId, email, password_hash: hashPassword(password), name, role: "admin" };
     this.users.push(user);
     return user;
   }
@@ -253,7 +253,7 @@ class InMemoryDB {
   }
 
   verifyPassword(hash: string, password: string): boolean {
-    return compareSync(password, hash);
+    return verifyPassword(password, hash);
   }
 }
 
