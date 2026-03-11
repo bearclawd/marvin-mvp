@@ -3,13 +3,14 @@ import { cookies } from "next/headers";
 import type { SessionData } from "./types";
 
 const sessionOptions = {
-  password: process.env.NEXTAUTH_SECRET || "marvin-default-secret-change-me-in-production-32chars!",
+  password: process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET || "marvin-default-secret-change-me-in-production-32chars!",
   cookieName: "marvin_session",
   cookieOptions: {
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     httpOnly: true,
     sameSite: "lax" as const,
     maxAge: 60 * 60 * 24 * 7, // 1 week
+    path: "/",
   },
 };
 

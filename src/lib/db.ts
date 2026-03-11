@@ -1,7 +1,12 @@
 import Database from "better-sqlite3";
 import path from "path";
 
-const DB_PATH = process.env.DATABASE_URL || path.join(process.cwd(), "marvin.db");
+// Use /tmp on Railway (ephemeral but writable) or cwd locally
+const DB_PATH = process.env.DATABASE_URL || (
+  process.env.RAILWAY_ENVIRONMENT
+    ? path.join("/tmp", "marvin.db")
+    : path.join(process.cwd(), "marvin.db")
+);
 
 let db: Database.Database;
 
