@@ -1,69 +1,57 @@
 import { NextResponse } from "next/server";
 import getDb from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
+  const now = new Date().toISOString();
   try {
-    let body;
-    try {
-      body = await req.json();
-    } catch (e) {
-      return NextResponse.json({ error: "Invalid JSON body", detail: String(e) }, { status: 400 });
-    }
-    
+    const body = await req.json();
     const { email, password } = body;
 
     if (!email || !password) {
-      return NextResponse.json({ error: "Email and password required" }, { status: 400 });
+      return NextResponse.json({ error: "Missing fields", time: now }, { status: 400 });
     }
 
-    let db;
-    try {
-      db = getDb();
-    } catch (e) {
-      return NextResponse.json({ error: "DB init failed", detail: String(e) }, { status: 500 });
-    }
-
-    let user;
-    try {
-      user = db.getUserByEmail(email);
-    } catch (e) {
-      return NextResponse.json({ error: "User lookup failed", detail: String(e) }, { status: 500 });
-    }
+    const db = getDb();
+    const user = db.getUserByEmail(email);
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 401 });
+      return NextResponse.json({ error: "User not found", time: now }, { status: 401 });
     }
 
-    let passwordValid;
-    try {
-      passwordValid = db.verifyPassword(user.password_hash, password);
-    } catch (e) {
-      return NextResponse.json({ error: "Password verify failed", detail: String(e) }, { status: 500 });
+    if (!db.verifyPassword(user.password_hash, password)) {
+      return NextResponse.json({ error: "Invalid password", time: now }, { status: 401 });
     }
 
-    if (!passwordValid) {
-      return NextResponse.json({ error: "Invalid password" }, { status: 401 });
-    }
-
-    // Create session token
     const sessionData = { userId: user.id, shopId: user.shop_id, email: user.email, name: user.name };
-    const token = Buffer.from(JSON.stringify(sessionData)).toString("base64url");
+    const sessionString = JSON.stringify(sessionData);
+    // Use standard base64 that works in both Node and Edge
+    const token = typeof btoa !== "undefined" 
+      ? btoa(sessionString) 
+      : Buffer.from(sessionString).toString("base64");
     
     const response = NextResponse.json({ 
       success: true, 
+      time: now,
       user: { id: user.id, name: user.name, email: user.email, shopName: user.shop_name } 
     });
     
     response.cookies.set("marvin_session", token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
     });
 
     return response;
-  } catch (error) {
-    return NextResponse.json({ error: "Unhandled error", detail: String(error), stack: (error as Error).stack }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ 
+      error: "Surgical fail", 
+      message: error.message, 
+      stack: error.stack,
+      time: now 
+    }, { status: 500 });
   }
 }
