@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { compareSync } from "bcryptjs";
 import getDb from "@/lib/db";
 import { getSession } from "@/lib/session";
-import { seedDemoData } from "@/lib/seed";
 
 export async function POST(req: Request) {
   try {
@@ -12,14 +10,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email and password required" }, { status: 400 });
     }
 
-    seedDemoData();
-
     const db = getDb();
-    const user = db.prepare(
-      "SELECT u.*, s.name as shop_name FROM users u JOIN shops s ON u.shop_id = s.id WHERE u.email = ?"
-    ).get(email) as { id: number; shop_id: number; email: string; password_hash: string; name: string; shop_name: string } | undefined;
+    const user = db.getUserByEmail(email);
 
-    if (!user || !compareSync(password, user.password_hash)) {
+    if (!user || !db.verifyPassword(user.password_hash, password)) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 

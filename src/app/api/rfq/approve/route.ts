@@ -16,9 +16,9 @@ export async function POST(req: Request) {
     }
 
     const db = getDb();
-    const rfq = db.prepare("SELECT * FROM rfqs WHERE id = ? AND shop_id = ?").get(rfqId, session.shopId);
+    const rfq = db.getRFQ(rfqId);
 
-    if (!rfq) {
+    if (!rfq || rfq.shop_id !== session.shopId) {
       return NextResponse.json({ error: "RFQ not found" }, { status: 404 });
     }
 
@@ -40,17 +40,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
-    db.prepare("UPDATE rfqs SET status = ?, updated_at = datetime('now') WHERE id = ?").run(newStatus, rfqId);
-
-    db.prepare(
-      "INSERT INTO activities (shop_id, type, title, description, icon) VALUES (?, ?, ?, ?, ?)"
-    ).run(
-      session.shopId,
-      action === "approve" ? "quote" : action,
-      action === "approve" ? "Quote approved" : action === "reject" ? "RFQ rejected" : action === "win" ? "Order won" : "RFQ sent to analysis",
-      `RFQ #${rfqId} status changed to ${newStatus}`,
-      action === "approve" ? "check-circle" : action === "reject" ? "x-circle" : "search"
-    );
+    db.updateRFQStatus(rfqId, newStatus);
 
     return NextResponse.json({ success: true, newStatus });
   } catch (error) {

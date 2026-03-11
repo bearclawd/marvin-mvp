@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import getDb from "@/lib/db";
 import { getSession } from "@/lib/session";
-import { seedDemoData } from "@/lib/seed";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    seedDemoData();
     const session = await getSession();
     if (!session.shopId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -14,18 +12,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const { id } = await params;
     const db = getDb();
 
-    const rfq = db.prepare(`
-      SELECT r.*, c.company as customer_company, c.name as customer_name, c.email as customer_email, c.avg_margin as customer_avg_margin
-      FROM rfqs r
-      LEFT JOIN customers c ON r.customer_id = c.id
-      WHERE r.id = ? AND r.shop_id = ?
-    `).get(Number(id), session.shopId);
+    const rfq = db.getRFQ(Number(id));
 
-    if (!rfq) {
+    if (!rfq || rfq.shop_id !== session.shopId) {
       return NextResponse.json({ error: "RFQ not found" }, { status: 404 });
     }
 
-    const parts = db.prepare("SELECT * FROM rfq_parts WHERE rfq_id = ?").all(Number(id));
+    const parts = db.getRFQParts(Number(id));
 
     return NextResponse.json({ rfq, parts });
   } catch (error) {
