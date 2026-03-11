@@ -1,22 +1,47 @@
-import { getIronSession } from "iron-session";
 import { cookies } from "next/headers";
-import type { SessionData } from "./types";
 
-const sessionOptions = {
-  password: process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET || "marvin-default-secret-change-me-in-production-32chars!",
-  cookieName: "marvin_session",
-  cookieOptions: {
-    secure: true,
-    httpOnly: true,
-    sameSite: "lax" as const,
-    maxAge: 60 * 60 * 24 * 7, // 1 week
-    path: "/",
-  },
-};
+const SECRET = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET || "marvin-default-secret-change-me-in-prod";
 
-export async function getSession() {
+export interface SessionData {
+  userId?: number;
+  shopId?: number;
+  email?: string;
+  name?: string;
+}
+
+function encode(data: SessionData): string {
+  return Buffer.from(JSON.stringify(data)).toString("base64url");
+}
+
+function decode(token: string): SessionData {
+  try {
+    return JSON.parse(Buffer.from(token, "base64url").toString("utf-8"));
+  } catch {
+    return {};
+  }
+}
+
+export async function getSession(): Promise<SessionData & { save: () => Promise<void>; destroy: () => void }> {
   const cookieStore = await cookies();
-  return getIronSession<SessionData>(cookieStore, sessionOptions);
+  const token = cookieStore.get("marvin_session")?.value;
+  const data: SessionData = token ? decode(token) : {};
+  
+  return {
+    ...data,
+    save: async () => {
+      const value = encode({ userId: data.userId, shopId: data.shopId, email: data.email, name: data.name });
+      cookieStore.set("marvin_session", value, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+    },
+    destroy: () => {
+      cookieStore.delete("marvin_session");
+    },
+  };
 }
 
 export async function requireAuth(): Promise<SessionData> {
