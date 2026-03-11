@@ -83,3 +83,12 @@ body {
     linear-gradient(90deg, rgba(20, 176, 174, 0.03) 1px, transparent 1px);
   background-size: 60px 60px;
 }
+
+/* Ensure framer-motion elements are visible even if JS animations haven't fired */
+/* This is a progressive enhancement fallback */
+@media (prefers-reduced-motion: reduce) {
+  [style*="opacity: 0"] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

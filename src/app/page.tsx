@@ -167,8 +167,8 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.1 }}
+            animate={{ opacity: 1, y: 0 }}
+            
             transition={{ duration: 0.8 }}
             className="relative rounded-2xl border border-white/10 bg-bg-dark/80 backdrop-blur-sm overflow-hidden shadow-2xl shadow-black/40"
           >
@@ -248,8 +248,8 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, amount: 0.1 }}
+            animate={{ opacity: 1 }}
+            
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-bold">
@@ -268,8 +268,8 @@ export default function LandingPage() {
                 key={feature.title}
                 custom={i}
                 initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.1 }}
+                animate="visible"
+                
                 variants={fadeUp}
                 className="group bg-bg-dark/50 border border-white/5 rounded-2xl p-6 hover:border-primary/30 transition-all duration-300"
               >
@@ -289,8 +289,8 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, amount: 0.1 }}
+            animate={{ opacity: 1 }}
+            
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-bold">
@@ -323,8 +323,8 @@ export default function LandingPage() {
                 key={item.step}
                 custom={i}
                 initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.1 }}
+                animate="visible"
+                
                 variants={fadeUp}
                 className="relative"
               >
@@ -346,8 +346,8 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
+              animate={{ opacity: 1, x: 0 }}
+              
             >
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-sm font-medium mb-4">
                 <MessageSquare className="w-4 h-4" />
@@ -377,8 +377,8 @@ export default function LandingPage() {
 
             <motion.div
               initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
+              animate={{ opacity: 1, x: 0 }}
+              
               className="bg-bg-dark border border-white/10 rounded-2xl p-6"
             >
               {/* Telegram chat mock */}
@@ -415,8 +415,8 @@ export default function LandingPage() {
       <section className="py-20 px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
+          
           className="max-w-3xl mx-auto text-center bg-gradient-to-b from-primary/10 to-transparent border border-primary/20 rounded-3xl p-12"
         >
           <MarvinLogo className="w-16 h-16 mx-auto mb-6 animate-pulse-glow rounded-2xl" />
